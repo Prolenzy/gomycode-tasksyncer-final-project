@@ -16,7 +16,7 @@ To run TaskSyncer locally, follow these steps:
 1. Clone this repository:
 
     ```bash
-    git clone <repository_url>
+    git clone https://github.com/Prolenzy/gomycode-tasksyncer-final-project 
     ```
 
 2. Navigate to the project directory:
