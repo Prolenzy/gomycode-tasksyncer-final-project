@@ -1,9 +1,8 @@
-// server.js
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-// const connectDB = require("./utils/db"); // Import the connectDB function
+const {connectDB} = require("./utils/db"); // Import the connectDB function
+import {Request, Response } from 'express';
 
 dotenv.config();
 
@@ -14,8 +13,11 @@ app.use(cors());
 app.use(express.json());
 
 // Your routes and middleware here
-
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hey guys, niko hapa');
+})
 // Connect to MongoDB
 app.listen(process.env.PORT || 5000, () => {
+  connectDB()
   console.log(`app is running on ${process.env.PORT}`)
 })
