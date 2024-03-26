@@ -1,0 +1,17 @@
+{
+  "name": "tasksyncer",
+  "version": "1.0.0",
+  "description": "TaskSyncer is a MERN (MongoDB, Express.js, React.js, Node.js) task management application designed to help users efficiently organize and track their tasks. With TaskSyncer, users can create, update, and delete tasks, set deadlines, and monitor their progress, all within an intuitive and seamless user interface.",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm i && concurrently \"npm run run-app\" \"npm run run-server\"",
+    "run-app": "cd client && npm run dev",
+    "run-server": "cd server && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
