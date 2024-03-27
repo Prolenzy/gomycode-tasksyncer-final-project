@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Textbox from '../components/Textbox';
+import { RootState } from '../redux/store';
+import { useSelector } from 'react-redux';
 
 // Define the shape of form data
 interface FormData {
@@ -11,7 +13,8 @@ interface FormData {
 }
 
 const Login: React.FC = () => {
-    const user: string = ""; //Assuming the user is a string
+    // Use RootState type to specify the type of user
+    const { user }: {user: RootState['auth']['user'] } = useSelector((state: RootState) => state.auth); //Assuming the user is a string
 
     // Initialize react-hook-form useForm hook with FormData as generic type
     const {
