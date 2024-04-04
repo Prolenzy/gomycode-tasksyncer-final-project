@@ -28,8 +28,8 @@ const Login: React.FC = () => {
      // Handle form submission
     const submitHandler = async (data: FormData) => {
         console.log("submitted data:", data)
-    }
-
+    };
+     
     // Redirect user to dashboard if already logged in
     useEffect(() => {
         if (user) {

@@ -30,10 +30,9 @@ const RegisterForm: React.FC = () => {
         <div className='w-full md:w-100 p-4 md:p-1 flex flex-col justify-center items-center'>
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md mx-auto mt-1 form-container md:w-[400px] flex flex-col gap-y-8 bg-white px-10 pt-14 pb-14">
             <div>
-                <h1 className='text-blue-600 text-3xl font-semibold text-center mb-2'>Welcome to TaskSyncer!</h1>
-                <p className='text-base text-center text-gray-900 mt-2'>Simplify task management and prioritize your work with TaskSyncer</p>                 
+                <h1 className='text-blue-600 text-2xl font-semibold text-center mb-2'>Welcome to TaskSyncer!</h1>                                
             </div>
-            <div className="mb-6">
+            <div className="mb-2">
                 <label htmlFor="username" className="block text-gray-700 font-bold mb-2">Username</label>
                 <Textbox
                     type="text"
@@ -44,7 +43,7 @@ const RegisterForm: React.FC = () => {
                 />
                 {errors.username && <p className="text-red-500">{errors.username.message}</p>}
             </div>
-            <div className="mb-6">
+            <div className="mb-2">
                 <label htmlFor="email" className="block text-gray-700 font-bold mb-2">Email</label>
                 <Textbox
                     type="email"
@@ -55,7 +54,7 @@ const RegisterForm: React.FC = () => {
                 />
                 {errors.email && <p className="text-red-500">{errors.email.message}</p>}
             </div>
-            <div className="mb-6">
+            <div className="mb-2">
                 <label htmlFor="password" className="block text-gray-700 font-bold mb-2">Password</label>
                 <Textbox
                     type="password"
@@ -66,7 +65,7 @@ const RegisterForm: React.FC = () => {
                 />
                 {errors.password && <p className="text-red-500">{errors.password.message}</p>}
             </div>
-            <div className="mb-6">
+            <div className="mb-2">
                 <label htmlFor="confirmPassword" className="block text-gray-700 font-bold mb-2">Confirm Password</label>
                 <Textbox
                     type="password"
