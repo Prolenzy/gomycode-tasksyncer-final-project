@@ -13,15 +13,13 @@ import Sidebar from "./components/Sidebar";
 import { RootState } from "./redux/store";
 import Navbar from "./components/Navbar";
 import { setOpenSidebar } from "./redux/slices/authSlice";
-import { Transition } from "@headlessui/react";
-import { Fragment } from "react/jsx-runtime";
+import { Transition } from "@headlessui/react"; 
 import { IoClose } from "react-icons/io5";
 import clsx from "clsx";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 
 function Layout () {
-  // const {user}: string = useSelector((state) => state.auth); 
-  const { user }: {user: RootState ['auth']['user'] } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const location = useLocation();
 
@@ -30,9 +28,9 @@ function Layout () {
       <div className="w-1/5 h-screen bg-white sticky top-0 hidden md:block">
         <Sidebar />
       </div>
-      {<MobileSidebar />}
+      <MobileSidebar />
       <div className="flex-1 overflow-y-auto">
-        {<Navbar />}
+        <Navbar />
 
         <div className="p-4 2xl: px-10">
           <Outlet />
@@ -45,8 +43,8 @@ function Layout () {
 }
 
 const MobileSidebar = () => {
-  const { isSidebarOpen } = useSelector((state) => state.auth);
-  const mobileMenuRef = useRef(null);
+  const { isSidebarOpen } = useSelector((state: RootState) => state.auth);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
 
   const closeSidebar = () => {
@@ -65,24 +63,35 @@ const MobileSidebar = () => {
         leaveFrom="opacity-x-100"
         leaveTo="opacity-x-0"
       >
-        {(ref) => <div ref={(node) => (mobileMenuRef.current = node)}
-        className={clsx("md:hidden w-full h-full bg-black/40 transition all duration-700 transform", isSidebarOpen ? "translate-x-0" : "translate-x-full")}
-        onClick={() => closeSidebar()}>
-          <div className="bg-white w-3/4 h-full">
-            <div className="w-full flex justify-end px-5 mt-5">
-              <button onClick={() => closeSidebar()} className="flex justify-end items-end">
-                <IoClose size={25} />
-              </button>
+         {() => (
+          <div
+            ref={mobileMenuRef}
+            className={clsx(
+              "md:hidden w-full h-full bg-black/40 transition-all duration-700 transform ",
+              isSidebarOpen ? "translate-x-0" : "translate-x-full"
+            )}
+            onClick={() => closeSidebar()}
+          >
+            <div className='bg-white w-3/4 h-full'>
+              <div className='w-full flex justify-end px-5 mt-5'>
+                <button
+                  onClick={() => closeSidebar()}
+                  className='flex justify-end items-end'
+                >
+                  <IoClose size={25} />
+                </button>
+              </div>
+
+              <div className='-mt-10'>
+                <Sidebar />
+              </div>
             </div>
-            <div className="-mt-10">
-              <Sidebar />
-            </div>
-            </div>          
-          </div>}
+          </div>
+        )}
       </Transition>
     </>
-  )
-}
+  );
+};
 
 function App() {
   return (
