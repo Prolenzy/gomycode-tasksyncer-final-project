@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import { errorHandler, routeNotFound } from "./middlewares/errorMiddlewaves";
+import { errorHandler, routeNotFound } from "./src/middlewares/errorMiddlewaves";
 import routes from "./routes/index";
 import { dbConnection } from "./utils/index";
 

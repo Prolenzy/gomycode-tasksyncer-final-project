@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/user.js";
-import { createJWT } from "../utils/index.js";
+import { createJWT } from "../../utils/index.js";
 import Notice from "../models/notification.js";
 
 interface RegisterUserRequestBody {
