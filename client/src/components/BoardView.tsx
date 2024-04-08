@@ -1,6 +1,19 @@
 import React from "react";
 import TaskCard from "./TaskCard";
-import { Task } from "./types"; // Assuming you have a types file with Task interface
+
+
+interface Task {
+  _id: string;
+  title: string;
+  priority: string;
+  stage: string;
+  date: Date; // Ensure date property is defined as a Date type
+  assets?: any[];
+  activities?: any[];
+  subTasks?: any[];
+  team?: any[];
+}
+
 
 interface BoardViewProps {
   tasks: Task[];

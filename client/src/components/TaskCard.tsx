@@ -1,11 +1,6 @@
 import clsx from "clsx";
 import React, { useState } from "react";
-import {
-  MdAttachFile,
-  MdKeyboardArrowDown,
-  MdKeyboardArrowUp,
-  MdKeyboardDoubleArrowUp,
-} from "react-icons/md";
+import { MdAttachFile, MdKeyboardArrowDown, MdKeyboardArrowUp, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../utils";
 import TaskDialog from "./task/TaskDialog";
@@ -15,23 +10,23 @@ import UserInfo from "./UserInfo";
 import { IoMdAdd } from "react-icons/io";
 import AddSubTask from "./task/AddSubTask";
 
-const ICONS = {
+interface Task {
+  _id: string;
+  title: string;
+  priority?: string; // Make priority optional
+  stage?: string; // Make stage optional
+  date: string;
+  assets?: any[];
+  activities?: any[];
+  subTasks?: { title: string; date: string; tag: string }[];
+  team?: any[];
+}
+
+const ICONS: { [key: string]: JSX.Element } = {
   high: <MdKeyboardDoubleArrowUp />,
   medium: <MdKeyboardArrowUp />,
   low: <MdKeyboardArrowDown />,
 };
-
-interface Task {
-  _id: string;
-  title: string;
-  priority: string;
-  stage: string;
-  date: string;
-  assets?: any[];
-  activities?: any[];
-  subTasks?: any[];
-  team?: any[];
-}
 
 const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
   const { user } = useSelector((state: any) => state.auth);
@@ -44,11 +39,11 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
           <div
             className={clsx(
               "flex flex-1 gap-1 items-center text-sm font-medium",
-              PRIOTITYSTYELS[task?.priority]
+              PRIOTITYSTYELS[task.priority || ""]
             )}
           >
-            <span className='text-lg'>{ICONS[task?.priority]}</span>
-            <span className='uppercase'>{task?.priority} Priority</span>
+            <span className='text-lg'>{ICONS[task.priority || ""]}</span>
+            <span className='uppercase'>{task.priority} Priority</span>
           </div>
 
           {user?.isAdmin && <TaskDialog task={task} />}
@@ -57,12 +52,12 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         <>
           <div className='flex items-center gap-2'>
             <div
-              className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage])}
+              className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage || ""])}
             />
-            <h4 className='line-clamp-1 text-black'>{task?.title}</h4>
+            <h4 className='line-clamp-1 text-black'>{task.title}</h4>
           </div>
           <span className='text-sm text-gray-600'>
-            {formatDate(new Date(task?.date))}
+            {formatDate(new Date(task.date))}
           </span>
         </>
 
@@ -71,20 +66,21 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
           <div className='flex items-center gap-3'>
             <div className='flex gap-1 items-center text-sm text-gray-600'>
               <BiMessageAltDetail />
-              <span>{task?.activities?.length}</span>
+              <span>{task.activities?.length || 0}</span>
             </div>
             <div className='flex gap-1 items-center text-sm text-gray-600 '>
               <MdAttachFile />
-              <span>{task?.assets?.length}</span>
+              <span>{task.assets?.length || 0}</span>
             </div>
             <div className='flex gap-1 items-center text-sm text-gray-600 '>
               <FaList />
-              <span>0/{task?.subTasks?.length}</span>
+              <span>{task.subTasks?.length || 0}/</span>
+              <span>{task.subTasks?.length || 0}</span>
             </div>
           </div>
 
           <div className='flex flex-row-reverse'>
-            {task?.team?.map((m: any, index: number) => (
+            {task.team?.map((m: any, index: number) => (
               <div
                 key={index}
                 className={clsx(
@@ -99,27 +95,25 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         </div>
 
         {/* sub tasks */}
-        {task?.subTasks?.length > 0 ? (
+        {task.subTasks?.length ? (
           <div className='py-4 border-t border-gray-200'>
             <h5 className='text-base line-clamp-1 text-black'>
-              {task?.subTasks[0].title}
+              {task.subTasks[0]?.title}
             </h5>
 
             <div className='p-4 space-x-8'>
               <span className='text-sm text-gray-600'>
-                {formatDate(new Date(task?.subTasks[0]?.date))}
+                {formatDate(new Date(task.subTasks[0]?.date))}
               </span>
-              <span className='bg-blue-600/10 px-3 py-1 rounded0full text-blue-700 font-medium'>
-                {task?.subTasks[0].tag}
+              <span className='bg-blue-600/10 px-3 py-1 rounded-full text-blue-700 font-medium'>
+                {task.subTasks[0]?.tag}
               </span>
             </div>
           </div>
         ) : (
-          <>
-            <div className='py-4 border-t border-gray-200'>
-              <span className='text-gray-500'>No Sub Task</span>
-            </div>
-          </>
+          <div className='py-4 border-t border-gray-200'>
+            <span className='text-gray-500'>No Sub Task</span>
+          </div>
         )}
 
         <div className='w-full pb-2'>

@@ -31,8 +31,8 @@ const Users: React.FC = () => {
     setOpenDialog(true);
   };
 
-  const editClick = (el: User) => {
-    setSelected(el._id);
+  const editClick = (el: string) => {
+    setSelected(el);
     setOpen(true);
   };
 
@@ -82,7 +82,7 @@ const Users: React.FC = () => {
           className='text-blue-600 hover:text-blue-500 font-semibold sm:px-0'
           label='Edit'
           type='button'
-          onClick={() => editClick(user)}
+          onClick={() => editClick(user._id)}
         />
 
         <Button

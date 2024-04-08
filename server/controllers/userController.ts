@@ -3,7 +3,24 @@ import User from "../models/user.js";
 import { createJWT } from "../utils/index.js";
 import Notice from "../models/notification.js";
 
-export const registerUser = async (req: Request, res: Response) => {
+interface RegisterUserRequestBody {
+  name: string;
+  email: string;
+  password: string;
+  isAdmin: boolean;
+  role: string;
+  title: string;
+}
+
+interface LoginUserRequestBody {
+  email: string;
+  password: string;
+}
+
+export const registerUser = async (
+  req: Request<{}, {}, RegisterUserRequestBody>,
+  res: Response
+) => {
   try {
     const { name, email, password, isAdmin, role, title } = req.body;
 
@@ -42,7 +59,10 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (
+  req: Request<{}, {}, LoginUserRequestBody>,
+  res: Response
+) => {
   try {
     const { email, password } = req.body;
 
@@ -54,7 +74,7 @@ export const loginUser = async (req: Request, res: Response) => {
         .json({ status: false, message: "Invalid email or password." });
     }
 
-    if (!user?.isActive) {
+    if (!user.isActive) {
       return res.status(401).json({
         status: false,
         message: "User account has been deactivated, contact the administrator",
@@ -83,7 +103,7 @@ export const loginUser = async (req: Request, res: Response) => {
 export const logoutUser = async (req: Request, res: Response) => {
   try {
     res.cookie("token", "", {
-      htttpOnly: true,
+      httpOnly: true,
       expires: new Date(0),
     });
 
@@ -107,7 +127,7 @@ export const getTeamList = async (req: Request, res: Response) => {
 
 export const getNotificationsList = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.user;
+    const userId = req.user?.userId;
 
     const notice = await Notice.find({
       team: userId,
@@ -123,8 +143,9 @@ export const getNotificationsList = async (req: Request, res: Response) => {
 
 export const updateUserProfile = async (req: Request, res: Response) => {
   try {
-    const { userId, isAdmin } = req.user;
-    const { _id } = req.body;
+    const userId = req.user?.userId;
+    const isAdmin = req.user?.isAdmin;
+    const { _id, name, title, role } = req.body;
 
     const id =
       isAdmin && userId === _id
@@ -136,9 +157,9 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     const user = await User.findById(id);
 
     if (user) {
-      user.name = req.body.name || user.name;
-      user.title = req.body.title || user.title;
-      user.role = req.body.role || user.role;
+      user.name = name || user.name;
+      user.title = title || user.title;
+      user.role = role || user.role;
 
       const updatedUser = await user.save();
 
@@ -160,7 +181,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
 export const markNotificationRead = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.user;
+    const userId = req.user?.userId;
 
     const { isReadType, id } = req.query;
 
@@ -187,7 +208,7 @@ export const markNotificationRead = async (req: Request, res: Response) => {
 
 export const changeUserPassword = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.user;
+    const userId = req.user?.userId;
 
     const user = await User.findById(userId);
 
@@ -200,7 +221,7 @@ export const changeUserPassword = async (req: Request, res: Response) => {
 
       res.status(201).json({
         status: true,
-        message: `Password chnaged successfully.`,
+        message: `Password changed successfully.`,
       });
     } else {
       res.status(404).json({ status: false, message: "User not found" });
@@ -218,14 +239,14 @@ export const activateUserProfile = async (req: Request, res: Response) => {
     const user = await User.findById(id);
 
     if (user) {
-      user.isActive = req.body.isActive; //!user.isActive
+      user.isActive = req.body.isActive;
 
       await user.save();
 
       res.status(201).json({
         status: true,
         message: `User account has been ${
-          user?.isActive ? "activated" : "disabled"
+          user.isActive ? "activated" : "disabled"
         }`,
       });
     } else {

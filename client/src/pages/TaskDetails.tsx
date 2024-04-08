@@ -1,15 +1,8 @@
 import clsx from "clsx";
 import moment from "moment";
 import React, { useState } from "react";
-import {
-  FaBug,
-  FaTasks,
-  FaThumbsUp,
-  FaUser,
-} from "react-icons/fa";
-import {
-  GrInProgress
-} from "react-icons/gr";
+import { FaBug, FaTasks, FaThumbsUp, FaUser } from "react-icons/fa";
+import { GrInProgress } from "react-icons/gr";
 import {
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
@@ -18,9 +11,7 @@ import {
   MdOutlineMessage,
   MdTaskAlt,
 } from "react-icons/md";
-import {
-  RxActivityLog
-} from "react-icons/rx";
+import { RxActivityLog } from "react-icons/rx";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { tasks } from "../assets/data";
@@ -29,20 +20,47 @@ import { PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
 import Loading from "../components/Loader";
 import Button from "../components/Button";
 
-const assets = [
+interface Asset {
+  url: string;
+}
+
+interface User {
+  name: string;
+  title: string;
+}
+
+interface Task {
+  title: string;
+  priority: string;
+  stage: string;
+  date: string;
+  assets?: Asset[];
+  team?: User[];
+}
+
+interface Activity {
+  type: string;
+  by: {
+    name: string;
+  };
+  date: string;
+  activity: string;
+}
+
+const assets: string[] = [
   "https://images.pexels.com/photos/2418664/pexels-photo-2418664.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
   "https://images.pexels.com/photos/8797307/pexels-photo-8797307.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
   "https://images.pexels.com/photos/2534523/pexels-photo-2534523.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
   "https://images.pexels.com/photos/804049/pexels-photo-804049.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
 ];
 
-const ICONS = {
+const ICONS: { [key: string]: React.ReactNode } = {
   high: <MdKeyboardDoubleArrowUp />,
   medium: <MdKeyboardArrowUp />,
   low: <MdKeyboardArrowDown />,
 };
 
-const bgColor = {
+const bgColor: { [key: string]: string } = {
   high: "bg-red-200",
   medium: "bg-yellow-200",
   low: "bg-blue-200",
@@ -53,10 +71,10 @@ const TABS = [
   { title: "Activities/Timeline", icon: <RxActivityLog /> },
 ];
 
-const TASKTYPEICON = {
+const TASKTYPEICON: { [key: string]: React.ReactNode } = {
   commented: (
     <div className='w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white'>
-      <MdOutlineMessage />,
+      <MdOutlineMessage />
     </div>
   ),
   started: (
@@ -95,11 +113,11 @@ const act_types = [
   "Assigned",
 ];
 
-const TaskDetails: React.FC = () => {
+const TaskDetails = () => {
   const { id } = useParams<{ id: string }>();
 
   const [selected, setSelected] = useState<number>(0);
-  const task = tasks[3];
+  const task: Task = tasks[3];
 
   return (
     <div className='w-full flex flex-col gap-3 mb-4 overflow-y-hidden'>
@@ -218,7 +236,7 @@ const TaskDetails: React.FC = () => {
                   {task?.assets?.map((el, index) => (
                     <img
                       key={index}
-                      src={el}
+                      src={el.url}
                       alt={task?.title}
                       className='w-full rounded h-28 md:h-36 2xl:h-52 cursor-pointer transition-all duration-700 hover:scale-125 hover:z-50'
                     />
@@ -237,28 +255,19 @@ const TaskDetails: React.FC = () => {
   );
 };
 
-interface ActivityItem {
-  type: string;
-  by: {
-    name: string;
-  };
-  date: string;
-  activity: string;
-}
-
 interface ActivitiesProps {
-  activity: ActivityItem[];
-  id: string;
+  activity?: Activity[];
+  id?: string;
 }
 
-const Activities: React.FC<ActivitiesProps> = ({ activity, id }) => {
+const Activities = ({ activity, id }: ActivitiesProps) => {
   const [selected, setSelected] = useState<string>(act_types[0]);
   const [text, setText] = useState<string>("");
   const isLoading = false;
 
   const handleSubmit = async () => {};
 
-  const Card: React.FC<{ item: ActivityItem }> = ({ item }) => {
+  const Card = ({ item }: { item: Activity }) => {
     return (
       <div className='flex space-x-4'>
         <div className='flex flex-col items-center flex-shrink-0'>
@@ -292,7 +301,6 @@ const Activities: React.FC<ActivitiesProps> = ({ activity, id }) => {
             <Card
               key={index}
               item={el}
-              isConnected={index < activity.length - 1}
             />
           ))}
         </div>

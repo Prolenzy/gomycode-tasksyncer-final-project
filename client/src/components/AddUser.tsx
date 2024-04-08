@@ -1,6 +1,5 @@
 import React from "react";
-import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useForm, SubmitHandler } from "react-hook-form";
 import ModalWrapper from "./ModalWrapper";
 import { Dialog } from "@headlessui/react";
 import Textbox from "./Textbox";
@@ -17,23 +16,46 @@ interface UserData {
 interface AddUserProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  userData?: UserData;
+  userData?: UserData | null;
 }
 
 const AddUser: React.FC<AddUserProps> = ({ open, setOpen, userData }) => {
-  const defaultValues: UserData = userData ?? {};
-  const { user } = useSelector((state: any) => state.auth);
-
-  const isLoading: boolean = false;
-  const isUpdating: boolean = false;
+  let defaultValues = userData ?? {};
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<UserData>({ defaultValues });
 
-  const handleOnSubmit = () => {};
+  const handleOnSubmit: SubmitHandler<UserData> = async (data) => {
+    try {
+      // Simulate loading state
+      // Set isLoading to true to show loader
+      setIsLoading(true);
+
+      // Perform API call or any asynchronous operation to submit data
+      // For demonstration, here we're just logging the submitted data
+      console.log("Submitted data:", data);
+
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Reset the form after successful submission
+      reset();
+
+      // Close the modal
+      setOpen(false);
+    } catch (error) {
+      console.error("Error occurred:", error);
+    } finally {
+      // Set isLoading to false to hide loader after operation completes
+      setIsLoading(false);
+    }
+  };
+
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   return (
     <>
@@ -93,28 +115,25 @@ const AddUser: React.FC<AddUserProps> = ({ open, setOpen, userData }) => {
             />
           </div>
 
-          {isLoading || isUpdating ? (
-            <div className='py-5'>
-              <Loading />
-            </div>
-          ) : (
-            <div className='py-3 mt-4 sm:flex sm:flex-row-reverse'>
-              <Button
-                type='submit'
-                className='bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700  sm:w-auto'
-                label='Submit'
-              />
+          <div className='py-3 mt-4 sm:flex sm:flex-row-reverse'>
+            <Button
+              type='submit'
+              className='bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700  sm:w-auto'
+              label='Submit'
+            />
 
-              <Button
-                type='button'
-                className='bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto'
-                onClick={() => setOpen(false)}
-                label='Cancel'
-              />
-            </div>
-          )}
+            <Button
+              type='button'
+              className='bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto'
+              onClick={() => setOpen(false)}
+              label='Cancel'
+            />
+          </div>
         </form>
       </ModalWrapper>
+
+      {/* Loading spinner */}
+      {isLoading && <Loading />}
     </>
   );
 };

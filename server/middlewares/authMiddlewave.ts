@@ -1,17 +1,35 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import User from "../models/user.js";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import User, { IUser } from "../models/user.js";
 
-const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
+interface DecodedToken {
+  userId: string;
+}
+
+interface UserRequest extends Request {
+  user?: {
+    email: string;
+    isAdmin: boolean;
+    userId: string;
+  };
+}
+
+const protectRoute = async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     let token = req.cookies?.token;
 
     if (token) {
-      const decodedToken: any = jwt.verify(token, process.env.JWT_SECRET);
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET) as DecodedToken | void;
 
-      const resp = await User.findById(decodedToken.userId).select(
-        "isAdmin email"
-      );
+      if (!decodedToken) {
+        return res.status(401).json({ status: false, message: "Token verification failed" });
+      }
+
+      const resp = await User.findById(decodedToken.userId).select("isAdmin email");
+
+      if (!resp) {
+        return res.status(401).json({ status: false, message: "User not found" });
+      }
 
       req.user = {
         email: resp.email,
@@ -33,7 +51,7 @@ const protectRoute = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-const isAdminRoute = (req: Request, res: Response, next: NextFunction) => {
+const isAdminRoute = (req: UserRequest, res: Response, next: NextFunction) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {

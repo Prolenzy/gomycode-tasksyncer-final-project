@@ -1,3 +1,5 @@
+// TaskDialog.tsx
+
 import React, { Fragment, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiTwotoneFolderOpen } from "react-icons/ai";
@@ -13,6 +15,9 @@ import ConfirmatioDialog from "../Dialogs";
 interface TaskDialogProps {
   task: {
     _id: string;
+    team?: any[]; // Include 'team' property and make it optional
+    stage?: string; // Include 'stage' property and make it optional
+    priority?: string; // Include 'priority' property and make it optional
   };
 }
 
@@ -31,7 +36,7 @@ const TaskDialog: React.FC<TaskDialogProps> = ({ task }) => {
     {
       label: "Open Task",
       icon: <AiTwotoneFolderOpen className='mr-2 h-5 w-5' aria-hidden='true' />,
-      onClick: () => navigate(`/task/${task._id}`),
+      onClick: () => navigate(`/task/${task?._id}`), // Handle case where task is undefined
     },
     {
       label: "Edit",
@@ -128,3 +133,4 @@ const TaskDialog: React.FC<TaskDialogProps> = ({ task }) => {
 };
 
 export default TaskDialog;
+

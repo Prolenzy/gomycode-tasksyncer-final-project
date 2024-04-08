@@ -8,44 +8,42 @@ import SelectList from "../SelectList";
 import { BiImages } from "react-icons/bi";
 import Button from "../Button";
 
+const LISTS: string[] = ["TODO", "IN PROGRESS", "COMPLETED"];
+const PRIORIRY: string[] = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
+
+interface Asset {
+  file: File;
+}
+
 interface AddTaskProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  task?: Task | null;
 }
 
-interface FormData {
-  title: string;
-  date: string;
+interface Task {
+  team?: any[]; // Making 'team' property optional
+  stage?: string; // Making 'stage' property optional
+  priority?: string; // Making 'priority' property optional
 }
 
-const LISTS = ["TODO", "IN PROGRESS", "COMPLETED"];
-const PRIORIRY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
-
-const uploadedFileURLs: string[] = [];
-
-const AddTask: React.FC<AddTaskProps> = ({ open, setOpen }) => {
-  const task = "";
-
+const AddTask: React.FC<AddTaskProps> = ({ open, setOpen, task }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>();
-  const [team, setTeam] = useState<string[]>(task?.team || []);
-  const [stage, setStage] = useState<string>(
-    task?.stage?.toUpperCase() || LISTS[0]
-  );
-  const [priority, setPriority] = useState<string>(
-    task?.priority?.toUpperCase() || PRIORIRY[2]
-  );
-  const [assets, setAssets] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
+  } = useForm();
+  const [team, setTeam] = useState<any[]>(task?.team || []);
+  const [stage, setStage] = useState<string>(task?.stage?.toUpperCase() || LISTS[0]);
+  const [priority, setPriority] = useState<string>(task?.priority?.toUpperCase() || PRIORIRY[2]);
 
   const submitHandler = () => {};
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setAssets(Array.from(e.target.files));
+      const selectedFiles: File[] = Array.from(e.target.files);
+      const newAssets: Asset[] = selectedFiles.map(file => ({ file }));
+      console.log(newAssets);
     }
   };
 
@@ -68,7 +66,7 @@ const AddTask: React.FC<AddTaskProps> = ({ open, setOpen }) => {
               label='Task Title'
               className='w-full rounded'
               register={register("title", { required: "Title is required" })}
-              error={errors.title ? errors.title.message : ""}
+              error={errors.title ? errors.title.message?.toString() : ""}
             />
 
             <UserList setTeam={setTeam} team={team} />
@@ -91,7 +89,7 @@ const AddTask: React.FC<AddTaskProps> = ({ open, setOpen }) => {
                   register={register("date", {
                     required: "Date is required!",
                   })}
-                  error={errors.date ? errors.date.message : ""}
+                  error={errors.date ? errors.date.message?.toString() : ""}
                 />
               </div>
             </div>
@@ -124,17 +122,11 @@ const AddTask: React.FC<AddTaskProps> = ({ open, setOpen }) => {
             </div>
 
             <div className='bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4'>
-              {uploading ? (
-                <span className='text-sm py-2 text-red-500'>
-                  Uploading assets
-                </span>
-              ) : (
-                <Button
-                  label='Submit'
-                  type='submit'
-                  className='bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700  sm:w-auto'
-                />
-              )}
+              <Button
+                label='Submit'
+                type='submit'
+                className='bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700  sm:w-auto'
+              />
 
               <Button
                 type='button'

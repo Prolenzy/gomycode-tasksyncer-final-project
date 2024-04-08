@@ -1,45 +1,44 @@
-import express, { Request, Response } from "express";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import dotenv from "dotenv";
-import morgan from "morgan";
-import { errorHandler, routeNotFound } from "./middlewares/errorMiddlewaves.js";
-import routes from "./routes/index.js";
-import { dbConnection } from "./utils/index.js";
+import { Request, Response } from "express";
 import Notice from "../models/notification.js";
 import Task from "../models/task.js";
 import User from "../models/user.js";
+import { Document, Types } from "mongoose";
 
-dotenv.config();
+interface TaskRequestBody {
+  userId: string;
+  title: string;
+  team: string[];
+  stage: string;
+  date: Date;
+  priority: string;
+  assets: string[];
+}
 
-dbConnection();
+interface TaskActivity {
+  type: string;
+  activity: string;
+  date: Date; // Add the date property
+  by: Types.ObjectId; // Assuming by is of type ObjectId
+}
 
-const PORT: number = parseInt(process.env.PORT || "5000");
+interface DuplicateTaskRequestBody {
+  id: string;
+}
 
-const app = express();
+interface PostTaskActivityRequestBody {
+  id: string;
+  type: string;
+  activity: string;
+}
 
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    credentials: true,
-  })
-);
+interface CustomRequest<T> extends Request {
+  user: T;
+}
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(cookieParser());
-
-app.use(morgan("dev"));
-app.use("/api", routes);
-
-app.use(routeNotFound);
-app.use(errorHandler);
-
-app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
-
-export const createTask = async (req: Request, res: Response) => {
+export const createTask = async (
+  req: CustomRequest<{ userId: string }>,
+  res: Response
+) => {
   try {
     const { userId } = req.user;
     const { title, team, stage, date, priority, assets } = req.body;
@@ -55,9 +54,10 @@ export const createTask = async (req: Request, res: Response) => {
         date
       ).toDateString()}. Thank you!!!`;
 
-    const activity = {
+    const activity: TaskActivity = {
       type: "assigned",
       activity: text,
+      date: new Date(), // Add the date property
       by: userId,
     };
 
@@ -68,7 +68,7 @@ export const createTask = async (req: Request, res: Response) => {
       date,
       priority: priority.toLowerCase(),
       assets,
-      activities: activity,
+      activities: [activity], // Note: Wrap activity in an array
     });
 
     await Notice.create({
@@ -86,13 +86,22 @@ export const createTask = async (req: Request, res: Response) => {
   }
 };
 
-export const duplicateTask = async (req: Request, res: Response) => {
+export const duplicateTask = async (
+  req: Request<DuplicateTaskRequestBody>,
+  res: Response
+) => {
   try {
     const { id } = req.params;
     const task = await Task.findById(id);
 
+    if (!task) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Task not found." });
+    }
+
     const newTask = await Task.create({
-      ...task.toObject(),
+      ...task,
       title: task.title + " - Duplicate",
     });
 
@@ -104,8 +113,9 @@ export const duplicateTask = async (req: Request, res: Response) => {
 
     await newTask.save();
 
+    //alert users of the task
     let text = "New task has been assigned to you";
-    if (task.team.length && task.team.length > 1) {
+    if (task.team.length > 1) {
       text = text + ` and ${task.team.length - 1} others.`;
     }
 
@@ -130,7 +140,10 @@ export const duplicateTask = async (req: Request, res: Response) => {
   }
 };
 
-export const postTaskActivity = async (req: Request, res: Response) => {
+export const postTaskActivity = async (
+  req: Request<PostTaskActivityRequestBody>,
+  res: Response
+) => {
   try {
     const { id } = req.params;
     const { userId } = req.user;
@@ -138,9 +151,16 @@ export const postTaskActivity = async (req: Request, res: Response) => {
 
     const task = await Task.findById(id);
 
-    const data = {
+    if (!task) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Task not found." });
+    }
+
+    const data: TaskActivity = {
       type,
       activity,
+      date: new Date(), // Add the date property
       by: userId,
     };
 
@@ -185,20 +205,25 @@ export const dashboardStatistics = async (req: Request, res: Response) => {
       .limit(10)
       .sort({ _id: -1 });
 
-    const groupTasks = allTasks.reduce((result: any, task: any) => {
-      const stage = task.stage;
+    //   group task by stage and calculate counts
+    const groupTaskks = allTasks.reduce(
+      (result: { [key: string]: number }, task: any) => {
+        const stage = task.stage;
 
-      if (!result[stage]) {
-        result[stage] = 1;
-      } else {
-        result[stage] += 1;
-      }
+        if (!result[stage]) {
+          result[stage] = 1;
+        } else {
+          result[stage] += 1;
+        }
 
-      return result;
-    }, {});
+        return result;
+      },
+      {}
+    );
 
+    // Group tasks by priority
     const groupData = Object.entries(
-      allTasks.reduce((result: any, task: any) => {
+      allTasks.reduce((result: { [key: string]: number }, task: any) => {
         const { priority } = task;
 
         result[priority] = (result[priority] || 0) + 1;
@@ -206,6 +231,7 @@ export const dashboardStatistics = async (req: Request, res: Response) => {
       }, {})
     ).map(([name, total]) => ({ name, total }));
 
+    // calculate total tasks
     const totalTasks = allTasks?.length;
     const last10Task = allTasks?.slice(0, 10);
 
@@ -213,7 +239,7 @@ export const dashboardStatistics = async (req: Request, res: Response) => {
       totalTasks,
       last10Task,
       users: isAdmin ? users : [],
-      tasks: groupTasks,
+      tasks: groupTaskks,
       graphData: groupData,
     };
 
@@ -284,6 +310,7 @@ export const getTask = async (req: Request, res: Response) => {
 export const createSubTask = async (req: Request, res: Response) => {
   try {
     const { title, tag, date } = req.body;
+
     const { id } = req.params;
 
     const newSubTask = {
@@ -314,6 +341,12 @@ export const updateTask = async (req: Request, res: Response) => {
 
     const task = await Task.findById(id);
 
+    if (!task) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Task not found." });
+    }
+
     task.title = title;
     task.date = date;
     task.priority = priority.toLowerCase();
@@ -325,7 +358,7 @@ export const updateTask = async (req: Request, res: Response) => {
 
     res
       .status(200)
-      .json({ status: true, message: "Task duplicated successfully." });
+      .json({ status: true, message: "Task updated successfully." });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -337,6 +370,12 @@ export const trashTask = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const task = await Task.findById(id);
+
+    if (!task) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Task not found." });
+    }
 
     task.isTrashed = true;
 
@@ -364,8 +403,14 @@ export const deleteRestoreTask = async (req: Request, res: Response) => {
     } else if (actionType === "restore") {
       const resp = await Task.findById(id);
 
+      if (!resp) {
+        return res
+          .status(404)
+          .json({ status: false, message: "Task not found." });
+      }
+
       resp.isTrashed = false;
-      resp.save();
+      await resp.save();
     } else if (actionType === "restoreAll") {
       await Task.updateMany(
         { isTrashed: true },

@@ -9,38 +9,35 @@ import { MdCheck } from "react-icons/md";
 interface User {
   _id: string;
   name: string;
+  // Add any other properties of the user data
 }
 
 interface UserListProps {
-  setTeam: (team: string[]) => void;
-  team: string[];
+  setTeam: React.Dispatch<React.SetStateAction<User[]>>;
+  team: User[];
 }
 
 const UserList: React.FC<UserListProps> = ({ setTeam, team }) => {
   const data: User[] = summary.users;
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const handleChange = (el: User[]) => {
-    setSelectedUsers(el);
-    setTeam(el?.map((u) => u._id));
+  const handleChange = (selected: User[]) => {
+    setSelectedUsers(selected);
+    setTeam(selected);
   };
 
   useEffect(() => {
-    if (team?.length < 1) {
+    if (team.length < 1) {
       data && setSelectedUsers([data[0]]);
     } else {
-      setSelectedUsers(team.map((id) => data.find((user) => user._id === id)));
+      setSelectedUsers(team);
     }
-  }, []);
+  }, [team]);
 
   return (
     <div>
       <p className='text-gray-700'>Assign Task To: </p>
-      <Listbox
-        value={selectedUsers}
-        onChange={(el) => handleChange(el as User[])}
-        multiple
-      >
+      <Listbox value={selectedUsers} onChange={handleChange} multiple>
         <div className='relative mt-1'>
           <Listbox.Button className='relative w-full cursor-default rounded bg-white pl-3 pr-10 text-left px-3 py-2.5 2xl:py-3 border border-gray-300 sm:text-sm'>
             <span className='block truncate'>

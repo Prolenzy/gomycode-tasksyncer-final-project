@@ -11,7 +11,6 @@ import { tasks } from "../assets/data";
 import Title from "../components/Title";
 import Button from "../components/Button";
 import { PRIOTITYSTYELS, TASK_TYPE } from "../utils";
-import AddUser from "../components/AddUser";
 import ConfirmatioDialog from "../components/Dialogs";
 
 interface Task {
@@ -19,25 +18,24 @@ interface Task {
   title: string;
   priority: string;
   stage: string;
-  date: Date;
+  date: string; // Assuming date is a string for now, you can adjust it accordingly
 }
 
-const ICONS = {
+const ICONS: Record<string, JSX.Element> = {
   high: <MdKeyboardDoubleArrowUp />,
   medium: <MdKeyboardArrowUp />,
   low: <MdKeyboardArrowDown />,
 };
 
-const Trash: React.FC = () => {
+const Trash = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [open, setOpen] = useState<boolean>(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [type, setType] = useState<string>("delete");
+  const [type, setType] = useState<"delete" | "restore" | "restoreAll" | undefined>(undefined);
   const [selected, setSelected] = useState<string>("");
 
   const deleteAllClick = () => {
     setType("deleteAll");
-    setMsg("Do you want to permenantly delete all items?");
+    setMsg("Do you want to permanently delete all items?");
     setOpenDialog(true);
   };
 
@@ -50,19 +48,20 @@ const Trash: React.FC = () => {
   const deleteClick = (id: string) => {
     setType("delete");
     setSelected(id);
+    setMsg("Do you want to delete the selected item?");
     setOpenDialog(true);
   };
 
   const restoreClick = (id: string) => {
-    setSelected(id);
     setType("restore");
+    setSelected(id);
     setMsg("Do you want to restore the selected item?");
     setOpenDialog(true);
   };
 
-  const TableHeader: React.FC = () => (
+  const TableHeader = () => (
     <thead className='border-b border-gray-300'>
-      <tr className='text-black  text-left'>
+      <tr className='text-black text-left'>
         <th className='py-2'>Task Title</th>
         <th className='py-2'>Priority</th>
         <th className='py-2'>Stage</th>
@@ -71,7 +70,7 @@ const Trash: React.FC = () => {
     </thead>
   );
 
-  const TableRow: React.FC<{ item: Task }> = ({ item }) => (
+  const TableRow = ({ item }: { item: Task }) => (
     <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-400/10'>
       <td className='py-2'>
         <div className='flex items-center gap-2'>
@@ -102,17 +101,20 @@ const Trash: React.FC = () => {
         <Button
           icon={<MdOutlineRestore className='text-xl text-gray-500' />}
           onClick={() => restoreClick(item._id)}
+          label="Restore"
         />
         <Button
           icon={<MdDelete className='text-xl text-red-600' />}
           onClick={() => deleteClick(item._id)}
+          label="Delete"
         />
       </td>
     </tr>
   );
 
   const deleteRestoreHandler = () => {
-    // Handle delete/restore action here
+    // Handle deletion or restoration logic here based on `type` and `selected`
+    setOpenDialog(false);
   };
 
   return (
@@ -126,13 +128,13 @@ const Trash: React.FC = () => {
               label='Restore All'
               icon={<MdOutlineRestore className='text-lg hidden md:flex' />}
               className='flex flex-row-reverse gap-1 items-center  text-black text-sm md:text-base rounded-md 2xl:py-2.5'
-              onClick={() => restoreAllClick()}
+              onClick={restoreAllClick}
             />
             <Button
               label='Delete All'
               icon={<MdDelete className='text-lg hidden md:flex' />}
               className='flex flex-row-reverse gap-1 items-center  text-red-600 text-sm md:text-base rounded-md 2xl:py-2.5'
-              onClick={() => deleteAllClick()}
+              onClick={deleteAllClick}
             />
           </div>
         </div>
@@ -150,8 +152,6 @@ const Trash: React.FC = () => {
         </div>
       </div>
 
-      {/* <AddUser open={open} setOpen={setOpen} /> */}
-
       <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}
@@ -159,7 +159,7 @@ const Trash: React.FC = () => {
         setMsg={setMsg}
         type={type}
         setType={setType}
-        onClick={() => deleteRestoreHandler()}
+        onClick={deleteRestoreHandler}
       />
     </>
   );
